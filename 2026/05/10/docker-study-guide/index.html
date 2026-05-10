@@ -1,0 +1,377 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Docker 学习干货整理：从镜像到部署的完整入门笔记 | 酸奶罐头的技术博客</title><meta name="author" content="酸奶罐头"><meta name="copyright" content="酸奶罐头"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="系统梳理 Docker 的核心概念、常用命令、镜像与容器关系、数据卷、网络、Dockerfile、Compose 以及常见排障思路。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker 学习干货整理：从镜像到部署的完整入门笔记">
+<meta property="og:url" content="http://lixiaotingcode.github.io/2026/05/10/docker-study-guide/index.html">
+<meta property="og:site_name" content="酸奶罐头的技术博客">
+<meta property="og:description" content="系统梳理 Docker 的核心概念、常用命令、镜像与容器关系、数据卷、网络、Dockerfile、Compose 以及常见排障思路。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://lixiaotingcode.github.io/img/bg.jpg">
+<meta property="article:published_time" content="2026-05-10T03:20:00.000Z">
+<meta property="article:modified_time" content="2026-05-10T06:08:35.336Z">
+<meta property="article:author" content="酸奶罐头">
+<meta property="article:tag" content="DevOps">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="容器">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://lixiaotingcode.github.io/img/bg.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Docker 学习干货整理：从镜像到部署的完整入门笔记",
+  "url": "http://lixiaotingcode.github.io/2026/05/10/docker-study-guide/",
+  "image": "http://lixiaotingcode.github.io/img/bg.jpg",
+  "datePublished": "2026-05-10T03:20:00.000Z",
+  "dateModified": "2026-05-10T06:08:35.336Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "酸奶罐头",
+      "url": "http://Lixiaotingcode.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/"><link rel="canonical" href="http://lixiaotingcode.github.io/2026/05/10/docker-study-guide/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.5-b1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Docker 学习干货整理：从镜像到部署的完整入门笔记',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(/img/body.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">9</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">酸奶罐头的技术博客</span></a><a class="nav-page-title" href="/"><span class="site-name">Docker 学习干货整理：从镜像到部署的完整入门笔记</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Docker 学习干货整理：从镜像到部署的完整入门笔记</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-05-10T03:20:00.000Z" title="发表于 2026-05-10 11:20:00">2026-05-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-05-10T06:08:35.336Z" title="更新于 2026-05-10 14:08:35">2026-05-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Docker%E5%AD%A6%E4%B9%A0/">Docker学习</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>Docker 的价值不只是“能跑起来一个环境”，而是把应用、依赖、运行方式一起打包，让开发、测试、部署尽量保持一致。</p>
+<p>这篇文章按“从概念到实战”的顺序整理，适合初学者作为第一篇完整笔记。</p>
+<h2 id="1-Docker-到底解决了什么问题"><a href="#1-Docker-到底解决了什么问题" class="headerlink" title="1. Docker 到底解决了什么问题"></a>1. Docker 到底解决了什么问题</h2><p>在没有 Docker 之前，开发环境和生产环境经常不一致：</p>
+<ul>
+<li>你电脑能跑，服务器跑不起来</li>
+<li>依赖版本不同</li>
+<li>配置文件位置不同</li>
+<li>手动部署步骤太多，容易漏</li>
+</ul>
+<p>Docker 的核心价值是：</p>
+<ul>
+<li>环境一致</li>
+<li>部署更快</li>
+<li>隔离更清晰</li>
+<li>迁移更方便</li>
+</ul>
+<h2 id="2-先分清镜像、容器、仓库"><a href="#2-先分清镜像、容器、仓库" class="headerlink" title="2. 先分清镜像、容器、仓库"></a>2. 先分清镜像、容器、仓库</h2><p>这是学习 Docker 最容易混淆的三个概念。</p>
+<ul>
+<li>镜像 <code>image</code>：应用运行的模板</li>
+<li>容器 <code>container</code>：镜像启动后的运行实例</li>
+<li>仓库 <code>registry</code>：存放镜像的地方，比如 Docker Hub</li>
+</ul>
+<p>可以这样理解：</p>
+<ul>
+<li>镜像像安装包</li>
+<li>容器像安装包运行后的程序</li>
+<li>仓库像软件下载站</li>
+</ul>
+<h2 id="3-安装后先会这组基础命令"><a href="#3-安装后先会这组基础命令" class="headerlink" title="3. 安装后先会这组基础命令"></a>3. 安装后先会这组基础命令</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> <span class="token parameter variable">--version</span>
+<span class="token function">docker</span> info
+<span class="token function">docker</span> images
+<span class="token function">docker</span> <span class="token function">ps</span>
+<span class="token function">docker</span> <span class="token function">ps</span> <span class="token parameter variable">-a</span>
+<span class="token function">docker</span> pull nginx
+<span class="token function">docker</span> run nginx
+<span class="token function">docker</span> stop <span class="token operator">&lt;</span>container_id<span class="token operator">></span>
+<span class="token function">docker</span> <span class="token function">rm</span> <span class="token operator">&lt;</span>container_id<span class="token operator">></span>
+<span class="token function">docker</span> rmi <span class="token operator">&lt;</span>image_id<span class="token operator">></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>高频动作其实就这几类：</p>
+<ul>
+<li>拉镜像</li>
+<li>启动容器</li>
+<li>看日志</li>
+<li>进容器</li>
+<li>停止和删除</li>
+</ul>
+<h2 id="4-最常用的启动方式"><a href="#4-最常用的启动方式" class="headerlink" title="4. 最常用的启动方式"></a>4. 最常用的启动方式</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token parameter variable">--name</span> my-nginx <span class="token parameter variable">-p</span> <span class="token number">8080</span>:80 nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>这条命令可以拆解为：</p>
+<ul>
+<li><code>-d</code>：后台运行</li>
+<li><code>--name my-nginx</code>：给容器命名</li>
+<li><code>-p 8080:80</code>：把宿主机 8080 映射到容器 80 端口</li>
+<li><code>nginx</code>：使用的镜像名</li>
+</ul>
+<p>查看是否成功：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> <span class="token function">ps</span>
+<span class="token function">curl</span> http://127.0.0.1:8080<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h2 id="5-日志和进入容器是排障基本功"><a href="#5-日志和进入容器是排障基本功" class="headerlink" title="5. 日志和进入容器是排障基本功"></a>5. 日志和进入容器是排障基本功</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> logs my-nginx
+<span class="token function">docker</span> logs <span class="token parameter variable">-f</span> my-nginx
+<span class="token function">docker</span> <span class="token builtin class-name">exec</span> <span class="token parameter variable">-it</span> my-nginx /bin/bash
+<span class="token function">docker</span> <span class="token builtin class-name">exec</span> <span class="token parameter variable">-it</span> my-nginx /bin/sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>如果容器启动后立刻退出，先不要猜，先看日志。</p>
+<h2 id="6-数据卷为什么重要"><a href="#6-数据卷为什么重要" class="headerlink" title="6. 数据卷为什么重要"></a>6. 数据卷为什么重要</h2><p>容器删除后，容器内部数据默认可能一起丢失，所以要学会用数据卷。</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token punctuation">\</span>
+  <span class="token parameter variable">--name</span> my-nginx <span class="token punctuation">\</span>
+  <span class="token parameter variable">-p</span> <span class="token number">8080</span>:80 <span class="token punctuation">\</span>
+  <span class="token parameter variable">-v</span> /data/nginx/html:/usr/share/nginx/html <span class="token punctuation">\</span>
+  nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>这样宿主机目录和容器目录就挂载起来了：</p>
+<ul>
+<li>改宿主机文件，容器里同步可见</li>
+<li>删除容器，宿主机数据还在</li>
+</ul>
+<p>常见场景：</p>
+<ul>
+<li>挂载网站静态文件</li>
+<li>挂载数据库数据目录</li>
+<li>挂载配置文件</li>
+<li>挂载日志目录</li>
+</ul>
+<h2 id="7-Docker-网络要理解端口映射"><a href="#7-Docker-网络要理解端口映射" class="headerlink" title="7. Docker 网络要理解端口映射"></a>7. Docker 网络要理解端口映射</h2><p>很多新手会混淆“容器内部端口”和“宿主机暴露端口”。</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token parameter variable">--name</span> web <span class="token parameter variable">-p</span> <span class="token number">3000</span>:80 nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>含义是：</p>
+<ul>
+<li>容器内部服务监听 <code>80</code></li>
+<li>宿主机通过 <code>3000</code> 对外提供访问</li>
+</ul>
+<p>所以你访问的是：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">http://127.0.0.1:3000<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>查看端口映射：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> port web<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>查看网络：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> network <span class="token function">ls</span>
+<span class="token function">docker</span> network inspect bridge<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h2 id="8-镜像是怎么做出来的"><a href="#8-镜像是怎么做出来的" class="headerlink" title="8. 镜像是怎么做出来的"></a>8. 镜像是怎么做出来的</h2><p>Docker 不只是拉别人的镜像，你也会自己构建镜像。</p>
+<p>一个最简单的 <code>Dockerfile</code>：</p>
+<pre class="line-numbers language-docker" data-language="docker"><code class="language-docker"><span class="token instruction"><span class="token keyword">FROM</span> node:20-alpine</span>
+<span class="token instruction"><span class="token keyword">WORKDIR</span> /app</span>
+<span class="token instruction"><span class="token keyword">COPY</span> package*.json ./</span>
+<span class="token instruction"><span class="token keyword">RUN</span> npm install</span>
+<span class="token instruction"><span class="token keyword">COPY</span> . .</span>
+<span class="token instruction"><span class="token keyword">EXPOSE</span> 3000</span>
+<span class="token instruction"><span class="token keyword">CMD</span> [<span class="token string">"npm"</span>, <span class="token string">"start"</span>]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>构建镜像：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> build <span class="token parameter variable">-t</span> my-app <span class="token builtin class-name">.</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>启动容器：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token parameter variable">--name</span> my-app <span class="token parameter variable">-p</span> <span class="token number">3000</span>:3000 my-app<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="9-写-Dockerfile-时要注意什么"><a href="#9-写-Dockerfile-时要注意什么" class="headerlink" title="9. 写 Dockerfile 时要注意什么"></a>9. 写 Dockerfile 时要注意什么</h2><p>几个常见原则：</p>
+<ul>
+<li>基础镜像尽量小，比如 <code>alpine</code></li>
+<li>先复制依赖文件，再安装依赖，利用构建缓存</li>
+<li>不要把无关文件都拷进去</li>
+<li>明确工作目录</li>
+<li>明确启动命令</li>
+</ul>
+<p>建议加一个 <code>.dockerignore</code>，避免把 <code>node_modules</code>、日志、构建产物带进镜像。</p>
+<h2 id="10-Docker-Compose-更适合多服务场景"><a href="#10-Docker-Compose-更适合多服务场景" class="headerlink" title="10. Docker Compose 更适合多服务场景"></a>10. Docker Compose 更适合多服务场景</h2><p>当项目不止一个服务时，比如：</p>
+<ul>
+<li>前端</li>
+<li>后端</li>
+<li>MySQL</li>
+<li>Redis</li>
+</ul>
+<p>这时候单独写很多 <code>docker run</code> 会很乱，更适合用 Compose。</p>
+<p>示例 <code>compose.yaml</code>：</p>
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">services</span><span class="token punctuation">:</span>
+  <span class="token key atrule">web</span><span class="token punctuation">:</span>
+    <span class="token key atrule">image</span><span class="token punctuation">:</span> nginx<span class="token punctuation">:</span>latest
+    <span class="token key atrule">ports</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> <span class="token string">"8080:80"</span>
+  <span class="token key atrule">redis</span><span class="token punctuation">:</span>
+    <span class="token key atrule">image</span><span class="token punctuation">:</span> redis<span class="token punctuation">:</span>latest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>启动：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> compose up <span class="token parameter variable">-d</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>停止：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> compose down<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>查看状态：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> compose <span class="token function">ps</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="11-常用排障命令要形成肌肉记忆"><a href="#11-常用排障命令要形成肌肉记忆" class="headerlink" title="11. 常用排障命令要形成肌肉记忆"></a>11. 常用排障命令要形成肌肉记忆</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> <span class="token function">ps</span> <span class="token parameter variable">-a</span>
+<span class="token function">docker</span> logs <span class="token operator">&lt;</span>container<span class="token operator">></span>
+<span class="token function">docker</span> inspect <span class="token operator">&lt;</span>container<span class="token operator">></span>
+<span class="token function">docker</span> <span class="token builtin class-name">exec</span> <span class="token parameter variable">-it</span> <span class="token operator">&lt;</span>container<span class="token operator">></span> /bin/sh
+<span class="token function">docker</span> stats
+<span class="token function">docker</span> network <span class="token function">ls</span>
+<span class="token function">docker</span> volume <span class="token function">ls</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>重点看这几类信息：</p>
+<ul>
+<li>容器是否真的在运行</li>
+<li>启动日志有没有报错</li>
+<li>端口是否映射正确</li>
+<li>配置文件是否挂载成功</li>
+<li>环境变量是否注入成功</li>
+</ul>
+<h2 id="12-常见问题排查思路"><a href="#12-常见问题排查思路" class="headerlink" title="12. 常见问题排查思路"></a>12. 常见问题排查思路</h2><h3 id="12-1-容器启动就退出"><a href="#12-1-容器启动就退出" class="headerlink" title="12.1 容器启动就退出"></a>12.1 容器启动就退出</h3><p>先查：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> logs <span class="token operator">&lt;</span>container<span class="token operator">></span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>可能原因：</p>
+<ul>
+<li>启动命令写错</li>
+<li>依赖没装全</li>
+<li>应用本身异常退出</li>
+<li>配置文件缺失</li>
+</ul>
+<h3 id="12-2-端口访问不到"><a href="#12-2-端口访问不到" class="headerlink" title="12.2 端口访问不到"></a>12.2 端口访问不到</h3><p>先查：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> <span class="token function">ps</span>
+<span class="token function">docker</span> port <span class="token operator">&lt;</span>container<span class="token operator">></span>
+<span class="token function">curl</span> http://127.0.0.1:映射端口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>再看：</p>
+<ul>
+<li>服务是不是监听在容器正确端口</li>
+<li>是否映射到了宿主机</li>
+<li>防火墙是否拦截</li>
+</ul>
+<h3 id="12-3-数据没保存"><a href="#12-3-数据没保存" class="headerlink" title="12.3 数据没保存"></a>12.3 数据没保存</h3><p>通常是没挂载卷，或者挂载路径写错。</p>
+<h3 id="12-4-镜像太大"><a href="#12-4-镜像太大" class="headerlink" title="12.4 镜像太大"></a>12.4 镜像太大</h3><p>通常是：</p>
+<ul>
+<li>基础镜像太重</li>
+<li>把无关文件复制进去了</li>
+<li>没有清理缓存</li>
+</ul>
+<h2 id="13-学-Docker-的推荐路线"><a href="#13-学-Docker-的推荐路线" class="headerlink" title="13. 学 Docker 的推荐路线"></a>13. 学 Docker 的推荐路线</h2><p>建议按这个顺序学：</p>
+<ol>
+<li>镜像、容器、仓库概念</li>
+<li>常用 <code>docker</code> 命令</li>
+<li>端口映射和日志查看</li>
+<li>数据卷与持久化</li>
+<li>Dockerfile</li>
+<li>Compose</li>
+<li>镜像优化</li>
+<li>线上部署和排障</li>
+</ol>
+<h2 id="14-常用命令速查表"><a href="#14-常用命令速查表" class="headerlink" title="14. 常用命令速查表"></a>14. 常用命令速查表</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> images
+<span class="token function">docker</span> <span class="token function">ps</span>
+<span class="token function">docker</span> <span class="token function">ps</span> <span class="token parameter variable">-a</span>
+<span class="token function">docker</span> pull nginx
+<span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token parameter variable">--name</span> web <span class="token parameter variable">-p</span> <span class="token number">8080</span>:80 nginx
+<span class="token function">docker</span> logs <span class="token parameter variable">-f</span> web
+<span class="token function">docker</span> <span class="token builtin class-name">exec</span> <span class="token parameter variable">-it</span> web /bin/sh
+<span class="token function">docker</span> stop web
+<span class="token function">docker</span> <span class="token function">rm</span> web
+<span class="token function">docker</span> rmi nginx
+<span class="token function">docker</span> build <span class="token parameter variable">-t</span> my-app <span class="token builtin class-name">.</span>
+<span class="token function">docker</span> compose up <span class="token parameter variable">-d</span>
+<span class="token function">docker</span> compose down<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="15-总结"><a href="#15-总结" class="headerlink" title="15. 总结"></a>15. 总结</h2><p>Docker 的学习重点，不是背所有参数，而是建立稳定的心智模型：</p>
+<ul>
+<li>镜像是模板</li>
+<li>容器是运行实例</li>
+<li>端口映射决定访问方式</li>
+<li>数据卷决定数据是否持久化</li>
+<li>日志和 <code>inspect</code> 是排障入口</li>
+</ul>
+<p>一旦这些概念清楚了，后面学 Compose、Kubernetes、CI&#x2F;CD 会顺很多。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://Lixiaotingcode.github.io">酸奶罐头</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://lixiaotingcode.github.io/2026/05/10/docker-study-guide/">http://lixiaotingcode.github.io/2026/05/10/docker-study-guide/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://Lixiaotingcode.github.io" target="_blank">酸奶罐头的技术博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Docker/">Docker</a><a class="post-meta__tags" href="/tags/%E5%AE%B9%E5%99%A8/">容器</a><a class="post-meta__tags" href="/tags/DevOps/">DevOps</a><a class="post-meta__tags" href="/tags/Linux/">Linux</a></div><div class="post-share"><div class="social-share" data-image="/img/bg.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/05/10/linux-study-guide/" title="Linux 学习干货整理：从入门到能独立排查问题"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/bg.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Linux 学习干货整理：从入门到能独立排查问题</div></div><div class="info-2"><div class="info-item-1">一篇适合初学者系统学习 Linux 的详细笔记，覆盖文件系统、权限、进程、网络、日志、软件安装与常用排障思路。</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/05/10/linux-study-guide/" title="Linux 学习干货整理：从入门到能独立排查问题"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/bg.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-10</div><div class="info-item-2">Linux 学习干货整理：从入门到能独立排查问题</div></div><div class="info-2"><div class="info-item-1">一篇适合初学者系统学习 Linux 的详细笔记，覆盖文件系统、权限、进程、网络、日志、软件安装与常用排障思路。</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">酸奶罐头</div><div class="author-info-description">一个喜欢电子、编程和折腾工具链的博主</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">9</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎常来逛逛，这里持续更新技术学习笔记。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Docker-%E5%88%B0%E5%BA%95%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">1. Docker 到底解决了什么问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%85%88%E5%88%86%E6%B8%85%E9%95%9C%E5%83%8F%E3%80%81%E5%AE%B9%E5%99%A8%E3%80%81%E4%BB%93%E5%BA%93"><span class="toc-number">2.</span> <span class="toc-text">2. 先分清镜像、容器、仓库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%AE%89%E8%A3%85%E5%90%8E%E5%85%88%E4%BC%9A%E8%BF%99%E7%BB%84%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4"><span class="toc-number">3.</span> <span class="toc-text">3. 安装后先会这组基础命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%9C%80%E5%B8%B8%E7%94%A8%E7%9A%84%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F"><span class="toc-number">4.</span> <span class="toc-text">4. 最常用的启动方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E6%97%A5%E5%BF%97%E5%92%8C%E8%BF%9B%E5%85%A5%E5%AE%B9%E5%99%A8%E6%98%AF%E6%8E%92%E9%9A%9C%E5%9F%BA%E6%9C%AC%E5%8A%9F"><span class="toc-number">5.</span> <span class="toc-text">5. 日志和进入容器是排障基本功</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%95%B0%E6%8D%AE%E5%8D%B7%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E8%A6%81"><span class="toc-number">6.</span> <span class="toc-text">6. 数据卷为什么重要</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Docker-%E7%BD%91%E7%BB%9C%E8%A6%81%E7%90%86%E8%A7%A3%E7%AB%AF%E5%8F%A3%E6%98%A0%E5%B0%84"><span class="toc-number">7.</span> <span class="toc-text">7. Docker 网络要理解端口映射</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E9%95%9C%E5%83%8F%E6%98%AF%E6%80%8E%E4%B9%88%E5%81%9A%E5%87%BA%E6%9D%A5%E7%9A%84"><span class="toc-number">8.</span> <span class="toc-text">8. 镜像是怎么做出来的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E5%86%99-Dockerfile-%E6%97%B6%E8%A6%81%E6%B3%A8%E6%84%8F%E4%BB%80%E4%B9%88"><span class="toc-number">9.</span> <span class="toc-text">9. 写 Dockerfile 时要注意什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-Docker-Compose-%E6%9B%B4%E9%80%82%E5%90%88%E5%A4%9A%E6%9C%8D%E5%8A%A1%E5%9C%BA%E6%99%AF"><span class="toc-number">10.</span> <span class="toc-text">10. Docker Compose 更适合多服务场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E5%B8%B8%E7%94%A8%E6%8E%92%E9%9A%9C%E5%91%BD%E4%BB%A4%E8%A6%81%E5%BD%A2%E6%88%90%E8%82%8C%E8%82%89%E8%AE%B0%E5%BF%86"><span class="toc-number">11.</span> <span class="toc-text">11. 常用排障命令要形成肌肉记忆</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5%E6%80%9D%E8%B7%AF"><span class="toc-number">12.</span> <span class="toc-text">12. 常见问题排查思路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-%E5%AE%B9%E5%99%A8%E5%90%AF%E5%8A%A8%E5%B0%B1%E9%80%80%E5%87%BA"><span class="toc-number">12.1.</span> <span class="toc-text">12.1 容器启动就退出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-%E7%AB%AF%E5%8F%A3%E8%AE%BF%E9%97%AE%E4%B8%8D%E5%88%B0"><span class="toc-number">12.2.</span> <span class="toc-text">12.2 端口访问不到</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-3-%E6%95%B0%E6%8D%AE%E6%B2%A1%E4%BF%9D%E5%AD%98"><span class="toc-number">12.3.</span> <span class="toc-text">12.3 数据没保存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-4-%E9%95%9C%E5%83%8F%E5%A4%AA%E5%A4%A7"><span class="toc-number">12.4.</span> <span class="toc-text">12.4 镜像太大</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-%E5%AD%A6-Docker-%E7%9A%84%E6%8E%A8%E8%8D%90%E8%B7%AF%E7%BA%BF"><span class="toc-number">13.</span> <span class="toc-text">13. 学 Docker 的推荐路线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc-number">14.</span> <span class="toc-text">14. 常用命令速查表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-%E6%80%BB%E7%BB%93"><span class="toc-number">15.</span> <span class="toc-text">15. 总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/05/10/docker-study-guide/" title="Docker 学习干货整理：从镜像到部署的完整入门笔记"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/bg.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Docker 学习干货整理：从镜像到部署的完整入门笔记"/></a><div class="content"><a class="title" href="/2026/05/10/docker-study-guide/" title="Docker 学习干货整理：从镜像到部署的完整入门笔记">Docker 学习干货整理：从镜像到部署的完整入门笔记</a><time datetime="2026-05-10T03:20:00.000Z" title="发表于 2026-05-10 11:20:00">2026-05-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/05/10/linux-study-guide/" title="Linux 学习干货整理：从入门到能独立排查问题"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/bg.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux 学习干货整理：从入门到能独立排查问题"/></a><div class="content"><a class="title" href="/2026/05/10/linux-study-guide/" title="Linux 学习干货整理：从入门到能独立排查问题">Linux 学习干货整理：从入门到能独立排查问题</a><time datetime="2026-05-10T02:30:00.000Z" title="发表于 2026-05-10 10:30:00">2026-05-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/05/09/hello-world/" title="建站记录：我的 Hexo 博客终于跑起来了"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/img/bg.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="建站记录：我的 Hexo 博客终于跑起来了"/></a><div class="content"><a class="title" href="/2026/05/09/hello-world/" title="建站记录：我的 Hexo 博客终于跑起来了">建站记录：我的 Hexo 博客终于跑起来了</a><time datetime="2026-05-09T12:00:00.000Z" title="发表于 2026-05-09 20:00:00">2026-05-09</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2026 By 酸奶罐头</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5-b1</a></span></div><div class="footer_custom_text">记录真实学习过程，而不是只展示结果。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5-b1"></script><script src="/js/main.js?v=5.5.5-b1"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.iife.min.js"></script><div class="js-pjax"></div><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.5-b1"></script></div></div></body></html>

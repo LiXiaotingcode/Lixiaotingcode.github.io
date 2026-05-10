@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>建站记录：我的 Hexo 博客终于跑起来了</title>
+    <url>/2026/05/09/hello-world/</url>
+    <content><![CDATA[这篇文章是站点初始化完成后的第一篇记录，用来确认博客的文章、标签、分类、封面、摘要和置顶能力都已经正常工作。
+后面这里会继续补充：
+
+主题配置踩坑
+页面创建流程
+GitHub Pages 部署过程
+常见报错排查方法
+
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>建站</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Docker 学习干货整理：从镜像到部署的完整入门笔记</title>
+    <url>/2026/05/10/docker-study-guide/</url>
+    <content><![CDATA[Docker 的价值不只是“能跑起来一个环境”，而是把应用、依赖、运行方式一起打包，让开发、测试、部署尽量保持一致。
+这篇文章按“从概念到实战”的顺序整理，适合初学者作为第一篇完整笔记。
+1. Docker 到底解决了什么问题在没有 Docker 之前，开发环境和生产环境经常不一致：
+
+你电脑能跑，服务器跑不起来
+依赖版本不同
+配置文件位置不同
+手动部署步骤太多，容易漏
+
+Docker 的核心价值是：
+
+环境一致
+部署更快
+隔离更清晰
+迁移更方便
+
+2. 先分清镜像、容器、仓库这是学习 Docker 最容易混淆的三个概念。
+
+镜像 image：应用运行的模板
+容器 container：镜像启动后的运行实例
+仓库 registry：存放镜像的地方，比如 Docker Hub
+
+可以这样理解：
+
+镜像像安装包
+容器像安装包运行后的程序
+仓库像软件下载站
+
+3. 安装后先会这组基础命令docker --version
+docker info
+docker images
+docker ps
+docker ps -a
+docker pull nginx
+docker run nginx
+docker stop &lt;container_id>
+docker rm &lt;container_id>
+docker rmi &lt;image_id>
+
+高频动作其实就这几类：
+
+拉镜像
+启动容器
+看日志
+进容器
+停止和删除
+
+4. 最常用的启动方式docker run -d --name my-nginx -p 8080:80 nginx
+
+这条命令可以拆解为：
+
+-d：后台运行
+--name my-nginx：给容器命名
+-p 8080:80：把宿主机 8080 映射到容器 80 端口
+nginx：使用的镜像名
+
+查看是否成功：
+docker ps
+curl http://127.0.0.1:8080
+
+5. 日志和进入容器是排障基本功docker logs my-nginx
+docker logs -f my-nginx
+docker exec -it my-nginx /bin/bash
+docker exec -it my-nginx /bin/sh
+
+如果容器启动后立刻退出，先不要猜，先看日志。
+6. 数据卷为什么重要容器删除后，容器内部数据默认可能一起丢失，所以要学会用数据卷。
+docker run -d \
+  --name my-nginx \
+  -p 8080:80 \
+  -v /data/nginx/html:/usr/share/nginx/html \
+  nginx
+
+这样宿主机目录和容器目录就挂载起来了：
+
+改宿主机文件，容器里同步可见
+删除容器，宿主机数据还在
+
+常见场景：
+
+挂载网站静态文件
+挂载数据库数据目录
+挂载配置文件
+挂载日志目录
+
+7. Docker 网络要理解端口映射很多新手会混淆“容器内部端口”和“宿主机暴露端口”。
+docker run -d --name web -p 3000:80 nginx
+
+含义是：
+
+容器内部服务监听 80
+宿主机通过 3000 对外提供访问
+
+所以你访问的是：
+http://127.0.0.1:3000
+
+查看端口映射：
+docker port web
+
+查看网络：
+docker network ls
+docker network inspect bridge
+
+8. 镜像是怎么做出来的Docker 不只是拉别人的镜像，你也会自己构建镜像。
+一个最简单的 Dockerfile：
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+
+构建镜像：
+docker build -t my-app .
+
+启动容器：
+docker run -d --name my-app -p 3000:3000 my-app
+
+9. 写 Dockerfile 时要注意什么几个常见原则：
+
+基础镜像尽量小，比如 alpine
+先复制依赖文件，再安装依赖，利用构建缓存
+不要把无关文件都拷进去
+明确工作目录
+明确启动命令
+
+建议加一个 .dockerignore，避免把 node_modules、日志、构建产物带进镜像。
+10. Docker Compose 更适合多服务场景当项目不止一个服务时，比如：
+
+前端
+后端
+MySQL
+Redis
+
+这时候单独写很多 docker run 会很乱，更适合用 Compose。
+示例 compose.yaml：
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+  redis:
+    image: redis:latest
+
+启动：
+docker compose up -d
+
+停止：
+docker compose down
+
+查看状态：
+docker compose ps
+
+11. 常用排障命令要形成肌肉记忆docker ps -a
+docker logs &lt;container>
+docker inspect &lt;container>
+docker exec -it &lt;container> /bin/sh
+docker stats
+docker network ls
+docker volume ls
+
+重点看这几类信息：
+
+容器是否真的在运行
+启动日志有没有报错
+端口是否映射正确
+配置文件是否挂载成功
+环境变量是否注入成功
+
+12. 常见问题排查思路12.1 容器启动就退出先查：
+docker logs &lt;container>
+
+可能原因：
+
+启动命令写错
+依赖没装全
+应用本身异常退出
+配置文件缺失
+
+12.2 端口访问不到先查：
+docker ps
+docker port &lt;container>
+curl http://127.0.0.1:映射端口
+
+再看：
+
+服务是不是监听在容器正确端口
+是否映射到了宿主机
+防火墙是否拦截
+
+12.3 数据没保存通常是没挂载卷，或者挂载路径写错。
+12.4 镜像太大通常是：
+
+基础镜像太重
+把无关文件复制进去了
+没有清理缓存
+
+13. 学 Docker 的推荐路线建议按这个顺序学：
+
+镜像、容器、仓库概念
+常用 docker 命令
+端口映射和日志查看
+数据卷与持久化
+Dockerfile
+Compose
+镜像优化
+线上部署和排障
+
+14. 常用命令速查表docker images
+docker ps
+docker ps -a
+docker pull nginx
+docker run -d --name web -p 8080:80 nginx
+docker logs -f web
+docker exec -it web /bin/sh
+docker stop web
+docker rm web
+docker rmi nginx
+docker build -t my-app .
+docker compose up -d
+docker compose down
+
+15. 总结Docker 的学习重点，不是背所有参数，而是建立稳定的心智模型：
+
+镜像是模板
+容器是运行实例
+端口映射决定访问方式
+数据卷决定数据是否持久化
+日志和 inspect 是排障入口
+
+一旦这些概念清楚了，后面学 Compose、Kubernetes、CI&#x2F;CD 会顺很多。
+]]></content>
+      <categories>
+        <category>Docker学习</category>
+      </categories>
+      <tags>
+        <tag>Docker</tag>
+        <tag>容器</tag>
+        <tag>DevOps</tag>
+        <tag>Linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux 学习干货整理：从入门到能独立排查问题</title>
+    <url>/2026/05/10/linux-study-guide/</url>
+    <content><![CDATA[Linux 不是“会几个命令”就算学会了。真正有用的学习方式，是把它当成一个完整系统来理解：文件怎么组织、权限怎么控制、进程怎么运行、服务怎么启动、网络怎么通信、问题怎么排查。
+这篇文章按“能真正上手”的顺序整理，适合做一篇长期保留的学习笔记。
+1. 先理解 Linux 到底是什么Linux 严格来说是内核，我们平时说的 Ubuntu、CentOS、Debian、Arch 等，其实是基于 Linux 内核的发行版。
+一个完整的 Linux 系统通常包含：
+
+内核：负责进程调度、内存管理、硬件驱动、文件系统
+Shell：命令行解释器，最常见的是 bash
+GNU 工具链：比如 ls、cp、grep、find、tar
+包管理器：比如 apt、yum、dnf
+服务管理工具：现代系统常见的是 systemd
+
+2. 文件系统是最基础的认知Linux 中“一切皆文件”这句话非常重要。普通文件、目录、设备、管道、套接字，本质上都以文件接口来组织。
+常见目录作用：
+
+/：根目录
+/home：普通用户家目录
+/root：root 用户家目录
+/etc：系统配置文件
+/var：日志、缓存等经常变化的数据
+/usr：用户级程序和共享资源
+/tmp：临时文件
+/proc：内核和进程信息的虚拟文件系统
+
+常用命令：
+pwd
+ls -la
+cd /etc
+mkdir demo
+touch a.txt
+cp a.txt b.txt
+mv b.txt notes.txt
+rm notes.txt
+rm -r demo
+
+3. 学会查看文件内容很多 Linux 工作都围绕“看配置、看日志、看输出”展开。
+cat /etc/hostname
+less /var/log/syslog
+head -n 20 /etc/passwd
+tail -n 20 /var/log/syslog
+tail -f /var/log/nginx/access.log
+grep -n "listen" /etc/nginx/nginx.conf
+grep -r "server" /etc/nginx
+
+建议尽快熟悉：
+
+less：看大文件
+tail -f：盯日志
+grep：查文本
+
+4. 权限模型必须吃透示例：
+-rw-r--r-- 1 user user 1200 May 10 10:00 test.txt
+
+权限字符含义：
+
+r：读
+w：写
+x：执行
+
+常见权限命令：
+chmod u+x run.sh
+chmod 644 test.txt
+chmod 755 script.sh
+chown user:user test.txt
+
+很多“文件明明存在却访问不了”的问题，根源都在目录权限。
+5. 用户、用户组与 sudoLinux 是多用户系统，所以身份很重要。
+whoami
+id
+groups
+sudo command
+su -
+
+日常管理优先用 sudo，不要长期直接以 root 身份操作。
+6. 进程管理是日常高频操作ps aux
+ps aux | grep nginx
+top
+pgrep node
+kill 1234
+pkill nginx
+nohup python app.py > app.log 2>&amp;1 &amp;
+
+建议先用普通 kill，kill -9 留作最后手段。
+7. 软件安装要分发行版理解Debian &#x2F; Ubuntu：
+sudo apt update
+sudo apt install nginx
+sudo apt remove nginx
+
+CentOS &#x2F; Rocky &#x2F; RHEL：
+sudo yum install nginx
+sudo dnf install nginx
+
+不要随便复制网上命令，先确认你的发行版和包管理器。
+8. systemd 和服务管理sudo systemctl start nginx
+sudo systemctl stop nginx
+sudo systemctl restart nginx
+sudo systemctl status nginx
+sudo systemctl enable nginx
+journalctl -u nginx -n 50
+
+一个服务启动失败时，先看 systemctl status，再看 journalctl。
+9. 网络命令必须会一套ip addr
+ip route
+ping 8.8.8.8
+curl http://127.0.0.1:3000
+curl -I https://example.com
+ss -tulpn
+nslookup example.com
+
+实际排障思路：
+
+能不能通 IP
+能不能解析域名
+服务有没有监听端口
+防火墙有没有放行
+
+10. 日志是排错第一现场常见日志目录：
+
+/var/log/syslog
+/var/log/messages
+/var/log/auth.log
+/var/log/nginx/access.log
+/var/log/nginx/error.log
+
+高效看日志：
+tail -f /var/log/nginx/error.log
+grep -i error /var/log/syslog
+grep -n "failed" /var/log/auth.log
+
+11. 压缩、归档与传输tar -czf backup.tar.gz /home/user/data
+tar -xzf backup.tar.gz
+zip -r site.zip public
+unzip site.zip
+scp file.txt user@server:/home/user/
+rsync -av project/ user@server:/home/user/project/
+
+12. Vim 不一定精通，但至少要能用最常用的几个：
+
+i：进入插入模式
+Esc：退出插入模式
+:w：保存
+:q：退出
+:wq：保存并退出
+:q!：不保存强制退出
+
+13. Shell 管道与重定向要熟练ps aux | grep nginx
+echo "hello" > a.txt
+echo "world" >> a.txt
+command > out.log
+command 2> err.log
+command > all.log 2>&amp;1
+
+重点理解：
+
+|：把前一个命令输出交给后一个命令处理
+&gt;：覆盖写入
+&gt;&gt;：追加写入
+2&gt;：重定向错误输出
+
+14. 学 Linux 时最实用的排障方法通用排查流程：
+
+先看报错原文
+确认是权限、路径、端口还是配置问题
+看日志
+看进程
+看端口
+看配置
+看资源
+
+网页打不开时，可以先查：
+systemctl status nginx
+ss -tulpn | grep 80
+curl http://127.0.0.1
+tail -n 50 /var/log/nginx/error.log
+
+15. Linux 学习路线建议建议按这个顺序学：
+
+文件和目录操作
+文件查看与搜索
+权限和用户
+进程管理
+软件安装
+服务管理
+网络排查
+日志分析
+Shell 脚本入门
+
+16. 总结Linux 真正有价值的地方，不是让你会敲很多命令，而是让你具备一种稳定的系统化排查能力。
+当你面对“服务起不来、网站打不开、权限不够、日志报错、端口冲突”这些实际问题时，能沿着正确路径一步步查下去，这才算真正入门。
+]]></content>
+      <categories>
+        <category>Linux学习</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>操作系统</tag>
+        <tag>命令行</tag>
+        <tag>运维入门</tag>
+      </tags>
+  </entry>
+</search>
